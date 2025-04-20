@@ -1,4 +1,4 @@
-# FramFresh Web Application
+# FramFresh Web Application [Live Link](https://farmfresh-9p24.onrender.com)
 
 A full-stack web application to streamline bulk vegetable and fruit orders. Buyers can browse products, place bulk orders, and track them, while admins can efficiently manage inventory and order fulfillment.
 
@@ -41,6 +41,8 @@ A full-stack web application to streamline bulk vegetable and fruit orders. Buye
     ```bash
     cd Client
       npm install
+    ```
+    ```bash
     cd ../Server
       npm install
     ```
@@ -51,6 +53,7 @@ A full-stack web application to streamline bulk vegetable and fruit orders. Buye
     cd Client 
     npm run build
     ```
+    Move this generated dist folder in Client to Server folder
     
     2. Serve the frontend : 
     ```bash
