@@ -1,41 +1,37 @@
-
-// import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Banner from '../components/Banner';
 import ProductCard from '../components/ProductCard';
-import { Search, Filter, Store } from 'lucide-react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-
 const Products = () => {
   const [mockProducts, setMockProducts] = useState([]);
-  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true); 
+  const navigate = useNavigate();
+  const user = useSelector(store => store.user.user);
 
-  const user= useSelector(store=>store.user.user)
-
-  if(!user){
-    navigate("/login")
+  // Redirect to login if user is not authenticated
+  if (!user) {
+    navigate("/login");
   }
 
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products`, { withCredentials: true });
-      setMockProducts(response.data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products`, { withCredentials: true });
+        setMockProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchProducts();
-}, []);
-
-
-  
+    fetchProducts();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -48,7 +44,12 @@ useEffect(() => {
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Our Fresh Produce</h2>
           </div>
           
-          {mockProducts.length === 0 ? (
+          {loading ? ( 
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-700">Loading products...</h3>
+              <div className="loader"></div>
+            </div>
+          ) : mockProducts.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-700">No products found</h3>
               <p className="mt-2 text-gray-500">Try adjusting your search or filters</p>

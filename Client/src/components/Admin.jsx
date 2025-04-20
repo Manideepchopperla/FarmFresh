@@ -18,12 +18,12 @@ const AdminPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isNewProduct, setIsNewProduct] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const user= useSelector(store=>store.user.user)
+  const user = useSelector(store => store.user.user);
 
-  if(!user){
-    navigate("/login")
+  if (!user) {
+    navigate("/login");
   }
 
   const date = new Date();
@@ -35,22 +35,19 @@ const AdminPage = () => {
 
   const todayDate = new Date();
   const formattedToday =
-  String(todayDate.getDate()).padStart(2, '0') + '-' +
-  String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
-  todayDate.getFullYear();
+    String(todayDate.getDate()).padStart(2, '0') + '-' +
+    String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
+    todayDate.getFullYear();
 
   useEffect(() => {
     fetchOrders();
     fetchProducts();
   }, []);
 
-
-
   const fetchOrders = async () => {
     try {
       const response = await axios.get(import.meta.env.VITE_BASE_URL + '/orders', { withCredentials: true });
       setOrders(response.data);
-      // toast.success('Orders fetched successfully');
     } catch (error) {
       toast.error('Failed to fetch orders');
     }
@@ -60,19 +57,18 @@ const AdminPage = () => {
     try {
       const response = await axios.get(import.meta.env.VITE_BASE_URL + '/products/my-products', { withCredentials: true });
       setProducts(response.data);
-      // toast.success('Products fetched successfully'); 
     } catch (error) {
       toast.error('Failed to fetch products');
     }
   };
-  
+
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
       await axios.patch(import.meta.env.VITE_BASE_URL + `/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
       setOrders(prevOrders => prevOrders.map(order => order.orderId === orderId ? { ...order, status: newStatus } : order));
-      toast.success(`Order ${orderId} status updated to ${newStatus}`); 
+      toast.success(`Order ${orderId} status updated to ${newStatus}`);
     } catch (error) {
-      toast.error('Failed to update order status'); 
+      toast.error('Failed to update order status');
     } finally {
       setOrderModalOpen(false);
       setSelectedOrder(null);
@@ -102,13 +98,13 @@ const AdminPage = () => {
       try {
         await axios.delete(import.meta.env.VITE_BASE_URL + `/products/${productId}`, { withCredentials: true });
         setProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
-        toast.success("Product deleted successfully"); 
+        toast.success("Product deleted successfully");
       } catch (error) {
         toast.error("Failed to delete product");
       }
     }
   };
-  
+
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
@@ -134,10 +130,10 @@ const AdminPage = () => {
   };
 
   const handleProductInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     setSelectedProduct(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : name === 'price' ? parseFloat(value) : value
+      [name]: type === 'checkbox' ? e.target.checked : name === 'price' ? parseFloat(value) : value
     }));
   };
 
@@ -288,7 +284,7 @@ const AdminPage = () => {
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-900 hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                       onClick={handleAddProduct}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                                            <Plus className="h-4 w-4 mr-2" />
                       Add Product
                     </button>
                   </div>
@@ -377,13 +373,12 @@ const AdminPage = () => {
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <p className="font-medium text-gray-700">Delivery Address</p>
                           <p className="text-gray-600">{selectedOrder.deliveryAddress}</p>
-                          
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">Order Details</h3>
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">Order Details</h3>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex items-center justify-between mb-3">
                           <p className="font-medium text-gray-700">Status</p>
@@ -399,7 +394,7 @@ const AdminPage = () => {
                         </div>
                         <div className="flex justify-between mb-3">
                           <p className="text-gray-600">Delivery Date</p>
-                          <p className="font-medium text-gray-700">{selectedOrder.status==="delivered"?formattedToday:formatted}</p>
+                          <p className="font-medium text-gray-700">{selectedOrder.status === "delivered" ? formattedToday : formatted}</p>
                         </div>
                         <div className="flex justify-between mb-3">
                           <p className="text-gray-600">Total Items</p>
@@ -428,7 +423,7 @@ const AdminPage = () => {
                         <tbody className="divide-y divide-gray-200">
                           {selectedOrder.items.map((item, index) => (
                             <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800"> {item.productId.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{item.productId.name}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{item.quantity} kg</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">₹{item.productId.price.toFixed(2)}/kg</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 text-right">₹{(item.productId.price * item.quantity).toFixed(2)}</td>
@@ -446,8 +441,7 @@ const AdminPage = () => {
                   </div>
 
                   <div className="flex flex-wrap justify-end gap-3 border-t border-gray-200 pt-6">
-                    <button
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    <button                       className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                       onClick={() => {
                         setOrderModalOpen(false);
                         setSelectedOrder(null);
@@ -459,126 +453,126 @@ const AdminPage = () => {
                       <button
                         className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'in_progress')}
-                        >
-                          Mark as In Progress
-                        </button>
-                      )}
-                      {selectedOrder.status === 'in_progress' && (
-                        <button
-                          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                          onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'delivered')}
-                        >
-                          Mark as Delivered
-                        </button>
-                      )}
-                    </div>
+                      >
+                        Mark as In Progress
+                      </button>
+                    )}
+                    {selectedOrder.status === 'in_progress' && (
+                      <button
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'delivered')}
+                      >
+                        Mark as Delivered
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-  
-            {/* Product Modal */}
-            {productModalOpen && selectedProduct && (
-              <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-6">
-                      <h2 className="text-xl font-semibold text-gray-800">
-                        {isNewProduct ? 'Add New Product' : 'Edit Product'}
-                      </h2>
-                      <button
-                        className="text-gray-400 hover:text-gray-500"
-                        onClick={() => {
-                          setProductModalOpen(false);
-                          setSelectedProduct(null);
-                        }}
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-  
-                    <form onSubmit={handleSaveProduct}>
-                      <div className="space-y-4">
+            </div>
+          )}
+
+          {/* Product Modal */}
+          {productModalOpen && selectedProduct && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-6">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      {isNewProduct ? 'Add New Product' : 'Edit Product'}
+                    </h2>
+                    <button
+                      className="text-gray-400 hover:text-gray-500"
+                      onClick={() => {
+                        setProductModalOpen(false);
+                        setSelectedProduct(null);
+                      }}
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveProduct}>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                          Product Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          required
+                          className="block h-8 text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                          value={selectedProduct.name}
+                          onChange={handleProductInputChange}
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          id="description"
+                          name="description"
+                          rows="3"
+                          className="block text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                          value={selectedProduct.description}
+                          onChange={handleProductInputChange}
+                        ></textarea>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Product Name
+                          <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                            Price (per kg)
                           </label>
-                          <input
-                            type="text"
-                            id="name"
-                            name="name"
+                          <div className="mt-1 relative rounded-md shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <span className="text-gray-500 sm:text-sm">₹</span>
+                            </div>
+                            <input
+                              type="number"
+                              id="price"
+                              name="price"
+                              min="0"
+                              step="0.01"
+                              required
+                              className="block h-8 text-black w-full pl-7 pr-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                              value={selectedProduct.price}
+                              onChange={handleProductInputChange}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                            Category
+                          </label>
+                          <select
+                            id="category"
+                            name="category"
                             required
                             className="block h-8 text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                            value={selectedProduct.name}
+                            value={selectedProduct.category}
                             onChange={handleProductInputChange}
-                          />
+                          >
+                            <option value="vegetable">Vegetable</option>
+                            <option value="fruit">Fruit</option>
+                          </select>
                         </div>
-  
-                        <div>
-                          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                            Description
-                          </label>
-                          <textarea
-                            id="description"
-                            name="description"
-                            rows="3"
-                            className="block text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                            value={selectedProduct.description}
-                            onChange={handleProductInputChange}
-                          ></textarea>
-                        </div>
-  
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                              Price (per kg)
-                            </label>
-                            <div className="mt-1 relative rounded-md shadow-sm">
-                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span className="text-gray-500 sm:text-sm">₹</span>
-                              </div>
-                              <input
-                                type="number"
-                                id="price"
-                                name="price"
-                                min="0"
-                                step="0.01"
-                                required
-                                className="block h-8 text-black w-full pl-7 pr-3 py-2 border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                                value={selectedProduct.price}
-                                onChange={handleProductInputChange}
-                              />
-                            </div>
-                          </div>
-  
-                          <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                              Category
-                            </label>
-                            <select
-                              id="category"
-                              name="category"
-                              required
-                              className="block h-8 text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
-                              value={selectedProduct.category}
-                              onChange={handleProductInputChange}
-                            >
-                              <option value="vegetable">Vegetable</option>
-                              <option value="fruit">Fruit</option>
-                            </select>
-                          </div>
-                        </div>
-  
-                        <div>
-                          <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                            Image URL
-                          </label>
-                          <input
-                            type="text"
-                            id="image"
-                            name="image"
-                            required
-                            className="block h-8 text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary                          sm:text-sm"
+                      </div>
+
+                      <div>
+                        <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+                          Image URL
+                        </label>
+                        <input
+                          type="text"
+                          id="image"
+                          name="image"
+                          required
+                          className="block h-8 text-black w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
                           value={selectedProduct.image}
                           onChange={handleProductInputChange}
                         />

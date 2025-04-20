@@ -43,19 +43,6 @@ const UserPage = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const date = new Date();
-  date.setDate(date.getDate() + 3);
-  const formatted =
-    String(date.getDate()).padStart(2, '0') + '-' +
-    String(date.getMonth() + 1).padStart(2, '0') + '-' +
-    date.getFullYear();
-
-  const todayDate = new Date();
-  const formattedToday =
-  String(todayDate.getDate()).padStart(2, '0') + '-' +
-  String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
-  todayDate.getFullYear();
-
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
     setOrderModalOpen(true);
@@ -93,7 +80,7 @@ const UserPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders && orders.length > 0 ? (
+                {orders && orders.length > 0 ? (
                     orders.map((order) => (
                       <tr key={order.orderId} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId}</td>
@@ -113,7 +100,7 @@ const UserPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           <button 
                             onClick={() => handleViewDetails(order)} 
-                            className="text-green-900 hover:text-green-900-dark">
+                            className="text-green-900 hover:text-green-700">
                             View Details
                           </button>
                         </td>
@@ -175,7 +162,7 @@ const UserPage = () => {
                         ${selectedOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                           selectedOrder.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
                           'bg-green-100 text-green-800'}`}>
-                        {selectedOrder.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                                                {selectedOrder.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
                         {selectedOrder.status === 'in_progress' && <Truck className="h-3 w-3 mr-1" />}
                         {selectedOrder.status === 'delivered' && <CheckCircle className="h-3 w-3 mr-1" />}
                         {selectedOrder.status}
@@ -183,7 +170,7 @@ const UserPage = () => {
                     </div>
                     <div className="flex justify-between mb-3">
                       <p className="text-gray-600">Delivery Date</p>
-                      <p className="font-medium text-gray-700">{selectedOrder && selectedOrder.status==="delivered"?formattedToday:formatted}</p>
+                      <p className="font-medium text-gray-700">{selectedOrder.status === "delivered" ? formattedToday : formatted}</p>
                     </div>
                     <div className="flex justify-between mb-3">
                       <p className="text-gray-600">Total Items</p>
@@ -239,29 +226,30 @@ const UserPage = () => {
                 >
                   Close
                 </button>
+                {/* Uncomment the following buttons if you want to allow status updates */}
                 {/* {selectedOrder.status === 'pending' && (
                   <button
                     className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    onClick={() => handleUpdateOrderStatus                    (selectedOrder.orderId, 'in_progress')}
-                    >
-                      Mark as In Progress
-                    </button>
-                  )}
-                  {selectedOrder.status === 'in_progress' && (
-                    <button
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'delivered')}
-                    >
-                      Mark as Delivered
-                    </button>
-                  )} */}
-                </div>
+                    onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'in_progress')}
+                  >
+                    Mark as In Progress
+                                    </button>
+                )}
+                {selectedOrder.status === 'in_progress' && (
+                  <button
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    onClick={() => handleUpdateOrderStatus(selectedOrder.orderId, 'delivered')}
+                  >
+                    Mark as Delivered
+                  </button>
+                )} */}
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
-    );
-  };
-  
-  export default UserPage;
+  );
+};
+
+export default UserPage;
