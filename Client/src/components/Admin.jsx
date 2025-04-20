@@ -410,7 +410,7 @@ const AdminPage = () => {
 
                   <div className="mb-6">
                     <h3 className="text-lg font-medium text-gray-800 mb-2">Order Items</h3>
-                    <div className="bg-gray-50 rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 rounded-lg overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-100">
                           <tr>
