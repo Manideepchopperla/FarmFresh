@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 import { ShoppingBag, Truck, Plus, Minus, X } from 'lucide-react';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
-import { addToCart, removeFromCart, updateQuantity, setDeliveryDetails } from '../utils/cartSlice';
+import { addToCart, removeFromCart, updateQuantity, setDeliveryDetails, clearCart } from '../utils/cartSlice';
 
 const OrderPage = () => {
   const navigate = useNavigate();
@@ -108,6 +108,7 @@ const OrderPage = () => {
     try {
       await axios.post(import.meta.env.VITE_BASE_URL + "/orders/", order, { withCredentials: true });
       toast.success(`Order placed successfully!`);
+      dispatch(clearCart());
       // navigate(`/track?orderId=${order.orderId}`);
     } catch (err) {
       console.error(err.message);
