@@ -77,6 +77,7 @@ const OrderPage = () => {
     return selectedProducts.reduce((total, item) => total + item.product.price * item.quantity, 0);
   };
 
+
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
 

@@ -43,6 +43,19 @@ const UserPage = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const date = new Date();
+  date.setDate(date.getDate() + 3);
+  const formatted =
+    String(date.getDate()).padStart(2, '0') + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    date.getFullYear();
+
+  const todayDate = new Date();
+  const formattedToday =
+    String(todayDate.getDate()).padStart(2, '0') + '-' +
+    String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
+    todayDate.getFullYear();
+
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
     setOrderModalOpen(true);
