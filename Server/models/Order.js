@@ -16,8 +16,6 @@ const orderSchema = new mongoose.Schema({
     required: true,
     trim: true,
     match: [/^\d{10,}$/, 'Enter a valid contact number'],
-    min:10,
-    max:10
   },
   deliveryAddress: {
     type: String,

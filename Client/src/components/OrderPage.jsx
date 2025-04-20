@@ -84,6 +84,10 @@ const OrderPage = () => {
       toast.error("Please select at least one product");
       return;
     }
+    if(formData.phone.length != 10 ) {
+      toast.error("Please enter valid phone number")
+      return;
+    }
 
     const order = {
       customerName: formData.fullName,
