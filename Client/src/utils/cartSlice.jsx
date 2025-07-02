@@ -1,7 +1,21 @@
-// src/slices/cartSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+const loadCart = () => {
+  try {
+    const stored = localStorage.getItem('cart');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveCart = (state) => {
+  try {
+    localStorage.setItem('cart', JSON.stringify(state));
+  } catch {}
+};
+
+const initialState = loadCart() || {
   items: [],
   deliveryDetails: {
     fullName: '',
@@ -12,37 +26,82 @@ const initialState = {
   },
 };
 
+const isValidCartItem = (item) =>
+  item && item.product && item.product._id && typeof item.quantity === 'number' && item.quantity > 0;
+
+const cleanCartItems = (items) => items.filter(isValidCartItem);
+
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const existingItem = state.items.find(item => item.product._id === action.payload.product._id);
+      const { product, quantity } = action.payload || {};
+      if (!product?._id || typeof product.price !== 'number' || !quantity) return;
+
+      state.items = cleanCartItems(state.items);
+      const existingItem = state.items.find((item) => item.product._id === product._id);
+
       if (existingItem) {
-        existingItem.quantity += action.payload.quantity; // Update quantity
+        existingItem.quantity += quantity;
       } else {
-        state.items.push(action.payload); // Add new item
+        const newItem = { product: structuredClone(product), quantity };
+        if (isValidCartItem(newItem)) state.items.push(newItem);
       }
+      saveCart(state);
     },
+
     removeFromCart: (state, action) => {
-      state.items = state.items.filter(item => item.product._id !== action.payload);
+      state.items = cleanCartItems(state.items).filter(
+        (item) => item.product._id !== action.payload
+      );
+      saveCart(state);
     },
+
     updateQuantity: (state, action) => {
-      const { productId, quantity } = action.payload;
-      const existingItem = state.items.find(item => item.product._id === productId);
-      if (existingItem) {
-        existingItem.quantity = quantity; // Update quantity
+      const { productId, quantity } = action.payload || {};
+      if (!productId || quantity < 1) return;
+
+      const existingItem = state.items.find((item) => item.product._id === productId);
+      if (existingItem) existingItem.quantity = quantity;
+
+      saveCart(state);
+    },
+
+    setDeliveryDetails: (state, action) => {
+      if (typeof action.payload === 'object') {
+        state.deliveryDetails = { ...state.deliveryDetails, ...action.payload };
+        saveCart(state);
       }
     },
-    setDeliveryDetails: (state, action) => {
-      state.deliveryDetails = { ...state.deliveryDetails, ...action.payload };
-    },
+
     clearCart: (state) => {
       state.items = [];
-      state.deliveryDetails = initialState.deliveryDetails; // Reset delivery details
+      state.deliveryDetails = { ...initialState.deliveryDetails };
+      saveCart(state);
+    },
+
+    resetCart: () => {
+      const reset = { ...initialState };
+      saveCart(reset);
+      return reset;
+    },
+
+    cleanCart: (state) => {
+      state.items = cleanCartItems(state.items);
+      saveCart(state);
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, setDeliveryDetails, clearCart } = cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  setDeliveryDetails,
+  clearCart,
+  resetCart,
+  cleanCart,
+} = cartSlice.actions;
+
 export default cartSlice.reducer;

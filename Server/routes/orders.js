@@ -2,8 +2,12 @@ import express from 'express';
 import Order from "../models/Order.js"
 import Product from '../models/Product.js';
 import { authenticateToken, isAdmin } from '../middleware/auth.js';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const router = express.Router();
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Create new order (buyers)
 const generateUniqueOrderId = () => `ORD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -115,5 +119,34 @@ router.patch('/:id/status', authenticateToken, isAdmin, async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+router.post("/checkout", authenticateToken, async (req, res) => {
+  const { products } = req.body; 
+
+  const lineItems = products.map(item => ({
+    price_data: {
+      currency: "inr",
+      product_data: {
+        name: item.product.name,
+        images: [item.product.image],
+      },
+      unit_amount: item.product.price * 100,
+    },
+    quantity: item.quantity,
+  }));
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: lineItems,
+    mode: 'payment',
+    success_url: `/success`,
+    cancel_url: `${process.env.CLIENT_URL}/cancel`,
+    // success_url: `${process.env.CLIENT_URL}/success`,
+    // cancel_url: `${process.env.CLIENT_URL}/cancel`,
+  });
+
+  res.json({ id: session.id });
+
+})
 
 export default router;

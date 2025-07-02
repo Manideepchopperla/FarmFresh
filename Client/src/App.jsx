@@ -9,6 +9,9 @@ import AdminPage from './components/Admin'
 import NotFound from './components/NotFound'
 import UserPage from './components/User'
 import { Toaster } from 'sonner'
+import ProtectedRoute from './ProtectedRoute'
+import Success from './components/PaymentSuccess'
+import Cancel from './components/PaymentCancel'
 
 function App() {
   return (
@@ -23,14 +26,28 @@ function App() {
           },
         }} />
         <Routes>
-            <Route path='/' element={<Products />} />
-            <Route path="login" element={<Login />} />
-            <Route path="order" element={<OrderPage />} />
-            <Route path="track" element={<TrackOrderPage />} />
-            <Route path="admin" element={<AdminPage />}/>
-            <Route path="user" element={<UserPage />}/>
-            <Route path="*" element={<NotFound />} />
+          <Route path='/' element={<ProtectedRoute><Products /></ProtectedRoute>} />
+          <Route path="login" element={<Login />} />
+
+          <Route path="order" element={
+            <ProtectedRoute><OrderPage /></ProtectedRoute>
+          } />
+          <Route path="track" element={
+            <ProtectedRoute><TrackOrderPage /></ProtectedRoute>
+          } />
+          <Route path="admin" element={
+            <ProtectedRoute><AdminPage /></ProtectedRoute>
+           } />
+          <Route path="user" element={
+            <ProtectedRoute><UserPage /></ProtectedRoute>
+          } />
+          <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
+          <Route path="cancel" element={<ProtectedRoute><Cancel /></ProtectedRoute>} />
+
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
+
       </BrowserRouter>
   )
 }

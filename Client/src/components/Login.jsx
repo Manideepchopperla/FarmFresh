@@ -164,7 +164,7 @@ const Login = () => {
               </button>
             </div>
 
-            <p className="m-auto cursor-pointer py-2 text-green-900" onClick={() => setIsLoginForm((value) => !value)}>
+            <p className="m-auto font-semibold cursor-pointer py-2 text-green-900" onClick={() => setIsLoginForm((value) => !value)}>
               {isLoginForm ? "New User? Signup Here" : "Existing User? Login Here"}
             </p>
           </div>

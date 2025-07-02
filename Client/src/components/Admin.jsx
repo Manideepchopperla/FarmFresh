@@ -5,7 +5,9 @@ import Footer from '../components/Footer';
 import { Package, ShoppingBag, Plus, Edit, Trash2, Search, X, Clock, Truck, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { addProduct, deleteProduct, updateProduct } from '../utils/productSlice';
+
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -19,6 +21,7 @@ const AdminPage = () => {
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isNewProduct, setIsNewProduct] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const user = useSelector(store => store.user.user);
 
@@ -67,6 +70,7 @@ const AdminPage = () => {
       await axios.patch(import.meta.env.VITE_BASE_URL + `/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
       setOrders(prevOrders => prevOrders.map(order => order.orderId === orderId ? { ...order, status: newStatus } : order));
       toast.success(`Order ${orderId} status updated to ${newStatus}`);
+
     } catch (error) {
       toast.error('Failed to update order status');
     } finally {
@@ -96,29 +100,31 @@ const AdminPage = () => {
   const handleDeleteProduct = async (productId) => {
     if (confirm("Are you sure you want to delete this product?")) {
       try {
-        await axios.delete(import.meta.env.VITE_BASE_URL + `/products/${productId}`, { withCredentials: true });
-        setProducts(prevProducts => prevProducts.filter(product => product._id !== productId));
+        await axios.delete(`${import.meta.env.VITE_BASE_URL}/products/${productId}`, {
+          withCredentials: true
+        });
+        dispatch(deleteProduct(productId));
         toast.success("Product deleted successfully");
       } catch (error) {
         toast.error("Failed to delete product");
       }
     }
   };
-
+  
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
       if (isNewProduct) {
-        const response = await axios.post(import.meta.env.VITE_BASE_URL + '/products', selectedProduct, { withCredentials: true });
-        setProducts(prevProducts => [...prevProducts, response.data]);
+        const { data } = await axios.post(`${import.meta.env.VITE_BASE_URL}/products`, selectedProduct, {
+          withCredentials: true
+        });
+        dispatch(addProduct(data));
         toast.success("Product added successfully");
       } else {
-        await axios.put(import.meta.env.VITE_BASE_URL + `/products/${selectedProduct._id}`, selectedProduct, { withCredentials: true });
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product._id === selectedProduct._id ? selectedProduct : product
-          )
-        );
+        const { data } = await axios.put(`${import.meta.env.VITE_BASE_URL}/products/${selectedProduct._id}`, selectedProduct, {
+          withCredentials: true
+        });
+        dispatch(updateProduct(data));
         toast.success("Product updated successfully");
       }
     } catch (error) {
