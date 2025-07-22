@@ -1,21 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const loadCart = () => {
-  try {
-    const stored = localStorage.getItem('cart');
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
 
-const saveCart = (state) => {
-  try {
-    localStorage.setItem('cart', JSON.stringify(state));
-  } catch {}
-};
-
-const initialState = loadCart() || {
+const initialState = {
   items: [],
   deliveryDetails: {
     fullName: '',
@@ -25,7 +11,6 @@ const initialState = loadCart() || {
     deliveryDate: '',
   },
 };
-
 const isValidCartItem = (item) =>
   item && item.product && item.product._id && typeof item.quantity === 'number' && item.quantity > 0;
 
@@ -48,14 +33,12 @@ const cartSlice = createSlice({
         const newItem = { product: structuredClone(product), quantity };
         if (isValidCartItem(newItem)) state.items.push(newItem);
       }
-      saveCart(state);
     },
 
     removeFromCart: (state, action) => {
       state.items = cleanCartItems(state.items).filter(
         (item) => item.product._id !== action.payload
       );
-      saveCart(state);
     },
 
     updateQuantity: (state, action) => {
@@ -64,32 +47,22 @@ const cartSlice = createSlice({
 
       const existingItem = state.items.find((item) => item.product._id === productId);
       if (existingItem) existingItem.quantity = quantity;
-
-      saveCart(state);
     },
 
     setDeliveryDetails: (state, action) => {
       if (typeof action.payload === 'object') {
         state.deliveryDetails = { ...state.deliveryDetails, ...action.payload };
-        saveCart(state);
       }
     },
 
     clearCart: (state) => {
       state.items = [];
       state.deliveryDetails = { ...initialState.deliveryDetails };
-      saveCart(state);
     },
-
-    resetCart: () => {
-      const reset = { ...initialState };
-      saveCart(reset);
-      return reset;
-    },
+    resetCart: () => initialState,
 
     cleanCart: (state) => {
       state.items = cleanCartItems(state.items);
-      saveCart(state);
     },
   },
 });

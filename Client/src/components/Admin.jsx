@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -6,13 +6,11 @@ import { Package, ShoppingBag, Plus, Edit, Trash2, Search, X, Clock, Truck, Chec
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addProduct, deleteProduct, updateProduct } from '../utils/productSlice';
-
+import { addProduct, deleteProduct, setProducts, updateProduct } from '../utils/productSlice'; // Added setProducts
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
   const [productSearchTerm, setProductSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -20,14 +18,21 @@ const AdminPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [isNewProduct, setIsNewProduct] = useState(false);
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const user = useSelector(store => store.user.user);
+  const user = useSelector(store => store.user);
+  const products = useSelector(store => store.product.items);
 
-  if (!user) {
-    navigate("/login");
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      fetchOrders();
+      fetchProducts();
+    }
+  }, [user]);
 
   const date = new Date();
   date.setDate(date.getDate() + 3);
@@ -42,35 +47,31 @@ const AdminPage = () => {
     String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
     todayDate.getFullYear();
 
-  useEffect(() => {
-    fetchOrders();
-    fetchProducts();
+  const fetchOrders = useCallback(async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/orders`, { withCredentials: true });
+      if (Array.isArray(response.data)) {
+        setOrders(response.data);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to fetch orders');
+    }
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_BASE_URL + '/orders', { withCredentials: true });
-      setOrders(response.data);
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/my-products`, { withCredentials: true });
+      dispatch(setProducts(response.data));
     } catch (error) {
-      toast.error('Failed to fetch orders');
+      toast.error(error.response?.data?.message || 'Failed to fetch products');
     }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get(import.meta.env.VITE_BASE_URL + '/products/my-products', { withCredentials: true });
-      setProducts(response.data);
-    } catch (error) {
-      toast.error('Failed to fetch products');
-    }
-  };
+  }, [dispatch]);
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await axios.patch(import.meta.env.VITE_BASE_URL + `/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
+      await axios.patch(`${import.meta.env.VITE_BASE_URL}/orders/${orderId}/status`, { status: newStatus }, { withCredentials: true });
       setOrders(prevOrders => prevOrders.map(order => order.orderId === orderId ? { ...order, status: newStatus } : order));
-      toast.success(`Order ${orderId} status updated to ${newStatus}`);
-
+      toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
       toast.error('Failed to update order status');
     } finally {
@@ -80,13 +81,7 @@ const AdminPage = () => {
   };
 
   const handleAddProduct = () => {
-    setSelectedProduct({
-      name: '',
-      description: '',
-      price: 0,
-      image: '',
-      category: 'vegetable'
-    });
+    setSelectedProduct({ name: '', description: '', price: 0, image: '', category: 'vegetable' });
     setIsNewProduct(true);
     setProductModalOpen(true);
   };
@@ -98,11 +93,9 @@ const AdminPage = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await axios.delete(`${import.meta.env.VITE_BASE_URL}/products/${productId}`, {
-          withCredentials: true
-        });
+        await axios.delete(`${import.meta.env.VITE_BASE_URL}/products/${productId}`, { withCredentials: true });
         dispatch(deleteProduct(productId));
         toast.success("Product deleted successfully");
       } catch (error) {
@@ -115,20 +108,16 @@ const AdminPage = () => {
     e.preventDefault();
     try {
       if (isNewProduct) {
-        const { data } = await axios.post(`${import.meta.env.VITE_BASE_URL}/products`, selectedProduct, {
-          withCredentials: true
-        });
+        const { data } = await axios.post(`${import.meta.env.VITE_BASE_URL}/products`, selectedProduct, { withCredentials: true });
         dispatch(addProduct(data));
         toast.success("Product added successfully");
       } else {
-        const { data } = await axios.put(`${import.meta.env.VITE_BASE_URL}/products/${selectedProduct._id}`, selectedProduct, {
-          withCredentials: true
-        });
+        const { data } = await axios.put(`${import.meta.env.VITE_BASE_URL}/products/${selectedProduct._id}`, selectedProduct, { withCredentials: true });
         dispatch(updateProduct(data));
         toast.success("Product updated successfully");
       }
     } catch (error) {
-      toast.error("Failed to save product");
+      toast.error(error.response?.data?.message || "Failed to save product");
     } finally {
       setProductModalOpen(false);
       setSelectedProduct(null);
@@ -137,16 +126,16 @@ const AdminPage = () => {
 
   const handleProductInputChange = (e) => {
     const { name, value, type } = e.target;
-    setSelectedProduct(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? e.target.checked : name === 'price' ? parseFloat(value) : value
-    }));
+    setSelectedProduct(prev => ({ ...prev, [name]: type === 'number' ? parseFloat(value) : value }));
   };
 
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  const filteredOrders = Array.isArray(orders) ? orders.filter(order => order.orderId.toLowerCase().includes(orderSearchTerm.toLowerCase())) : [];
+  const filteredProducts = Array.isArray(products) ? products.filter(product => product.name.toLowerCase().includes(productSearchTerm.toLowerCase())) : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -156,53 +145,25 @@ const AdminPage = () => {
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
           <div className="mb-6 border-b border-gray-200">
             <div className="flex flex-wrap -mb-px">
-              <button
-                className={`mr-2 inline-flex items-center py-4 px-4 text-sm font-medium text-center border-b-2 ${
-                  activeTab === 'orders'
-                    ? 'border-green-900 text-green-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('orders')}
-              >
-                <Package className="h-5 w-5 mr-2" />
-                Orders
+              <button className={`mr-2 inline-flex items-center py-4 px-4 text-sm font-medium text-center border-b-2 ${activeTab === 'orders' ? 'border-green-900 text-green-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveTab('orders')}>
+                <Package className="h-5 w-5 mr-2" /> Orders
               </button>
-              <button
-                className={`mr-2 inline-flex items-center py-4 px-4 text-sm font-medium text-center border-b-2 ${
-                  activeTab === 'products'
-                    ? 'border-green-900 text-green-900'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => setActiveTab('products')}
-              >
-                <ShoppingBag className="h-5 w-5 mr-2" />
-                Products
+              <button className={`mr-2 inline-flex items-center py-4 px-4 text-sm font-medium text-center border-b-2 ${activeTab === 'products' ? 'border-green-900 text-green-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} onClick={() => setActiveTab('products')}>
+                <ShoppingBag className="h-5 w-5 mr-2" /> Products
               </button>
             </div>
           </div>
 
-          {/* Orders Tab Content */}
           {activeTab === 'orders' && (
             <div>
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 space-y-4 md:space-y-0">
                   <h2 className="text-xl font-semibold text-gray-800">Order Management</h2>
-                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        className="block h-8 text-black w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary"
-                        placeholder="Search orders..."
-                        value={orderSearchTerm}
-                        onChange={(e) => setOrderSearchTerm(e.target.value)}
-                      />
-                    </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-4 w-4 text-gray-400" /></div>
+                    <input type="text" className="block h-8 text-black w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" placeholder="Search orders..." value={orderSearchTerm} onChange={(e) => setOrderSearchTerm(e.target.value)} />
                   </div>
                 </div>
-
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -216,49 +177,28 @@ const AdminPage = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {Array.isArray(orders) && orders.filter(order =>
-                        order.orderId.toLowerCase().includes(orderSearchTerm.toLowerCase())
-                      ).length > 0 ? (
-                        orders
-                          .filter(order =>
-                            order.orderId.toLowerCase().includes(orderSearchTerm.toLowerCase())
-                          )
-                          .map((order) => (
-                            <tr key={order.orderId} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{order.customerName}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(order.createdAt)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{order.totalAmount.toFixed(2)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                  ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                    order.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
-                                    'bg-green-100 text-green-800'}`}>
-                                  {order.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-                                  {order.status === 'in_progress' && <Truck className="h-3 w-3 mr-1" />}
-                                  {order.status === 'delivered' && <CheckCircle className="h-3 w-3 mr-1" />}
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button
-                                  className="text-green-900 hover:text-green-900-dark"
-                                  onClick={() => {
-                                    setSelectedOrder(order);
-                                    setOrderModalOpen(true);
-                                  }}
-                                >
-                                  View Details
-                                </button>
-                              </td>
-                            </tr>
-                          ))
+                      {filteredOrders.length > 0 ? (
+                        filteredOrders.map((order) => (
+                          <tr key={order.orderId} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderId}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{order.customerName}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(order.createdAt)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{order.totalAmount.toFixed(2)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : order.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                {order.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                                {order.status === 'in_progress' && <Truck className="h-3 w-3 mr-1" />}
+                                {order.status === 'delivered' && <CheckCircle className="h-3 w-3 mr-1" />}
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <button className="text-green-900 hover:text-green-800" onClick={() => { setSelectedOrder(order); setOrderModalOpen(true); }}>View Details</button>
+                            </td>
+                          </tr>
+                        ))
                       ) : (
-                        <tr>
-                          <td colSpan="6" className="text-center py-6 text-gray-500">
-                            No orders found.
-                          </td>
-                        </tr>
+                        <tr><td colSpan="6" className="text-center py-6 text-gray-500">No orders found.</td></tr>
                       )}
                     </tbody>
                   </table>

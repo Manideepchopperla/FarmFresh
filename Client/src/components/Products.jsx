@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setProducts } from '../utils/productSlice';
 
 const Products = () => {
+  // loading state is true by default to show a loader on initial visit
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const products = useSelector(store => store.product.items);
@@ -26,8 +27,12 @@ const Products = () => {
       }
     };
 
-    fetchProducts();  
-  }, [dispatch]);
+    if (products.length === 0) {
+      fetchProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [dispatch, products.length]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,12 +48,13 @@ const Products = () => {
           {loading ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-700">Loading products...</h3>
-              <div className="loader"></div>
+              {/* Consider adding a spinner component here */}
+              <div className="loader"></div> 
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-lg font-medium text-gray-700">No products found</h3>
-              <p className="mt-2 text-gray-500">Try adjusting your search or filters</p>
+              <p className="mt-2 text-gray-500">We are currently out of stock. Please check back later!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

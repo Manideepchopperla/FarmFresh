@@ -16,10 +16,11 @@ const Login = () => {
   const [error, setError] = useState("");
   const dispatch = useDispatch()
   const navigate = useNavigate();
-  const user = useSelector(store => store.user)
+  
+  const user = useSelector(store => store.user);
 
   useEffect(() => {
-    if (user.user) {
+    if (user) {
       navigate('/');
     }
   }, [user, navigate]);
@@ -33,16 +34,12 @@ const Login = () => {
         withCredentials: true
       });
       dispatch(setUser(res.data));
-      toast.success('Login successful! Welcome back!', {
-        ariaLabel: 'Login success',
-      });
-      return navigate('/');
+      toast.success('Login successful! Welcome back!');
+      navigate('/');
     } catch (error) {
       const errorMsg = error?.response?.data?.message || error?.response?.data || error.message || "Something went wrong";
       setError(errorMsg);
-      toast.error('Login failed. Please check your credentials.', {
-        ariaLabel: 'Login error',
-      });
+      toast.error('Login failed. Please check your credentials.');
     }
   }
 
@@ -57,16 +54,12 @@ const Login = () => {
         withCredentials: true
       });
       dispatch(setUser(res.data));
-      toast.success('Sign up successful! You can now log in.', {
-        ariaLabel: 'Sign up success',
-      });
+      toast.success('Sign up successful! You can now log in.');
       navigate('/');
     } catch (error) {
       const errorMsg = error?.response?.data?.message || error?.response?.data || error.message || "Something went wrong";
       setError(errorMsg);
-      toast.error('Sign up failed. Please try again.', {
-        ariaLabel: 'Sign up error',
-      });
+      toast.error('Sign up failed. Please try again.');
     }
   }
 
@@ -102,6 +95,7 @@ const Login = () => {
                 <select
                   defaultValue=""
                   onChange={e => setRole(e.target.value)}
+                  required={!isLoginForm}
                   className="w-full p-3 border border-gray-300 rounded-2xl bg-white text-gray-800 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="" disabled className='text-gray-800'>
@@ -153,8 +147,8 @@ const Login = () => {
             </label>
 
             {error && (
-              <p className="text-red-300">
-                {typeof error === 'string' ? error : error.message || JSON.stringify(error)}
+              <p className="text-red-500 text-sm text-center">
+                {typeof error === 'string' ? error : error.message || "An unknown error occurred"}
               </p>
             )}
 
@@ -164,7 +158,7 @@ const Login = () => {
               </button>
             </div>
 
-            <p className="m-auto font-semibold cursor-pointer py-2 text-green-900" onClick={() => setIsLoginForm((value) => !value)}>
+            <p className="m-auto font-semibold cursor-pointer py-2 text-green-900" onClick={() => { setIsLoginForm((value) => !value); setError(""); }}>
               {isLoginForm ? "New User? Signup Here" : "Existing User? Login Here"}
             </p>
           </div>

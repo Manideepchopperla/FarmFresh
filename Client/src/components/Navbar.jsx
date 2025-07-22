@@ -11,12 +11,12 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector(store => store.user.user);
+  
+  const user = useSelector(store => store.user);
   const location = useLocation();
-
   let role = null;
   if (user) {
-    role = user.role;
+    role = user.user.role;
   }
 
   const handleLogOut = async () => {
@@ -35,7 +35,7 @@ const Navbar = () => {
   };
 
   const isActive = (path) =>
-    location.pathname === path || (path === '/' && location.pathname === '/');
+    location.pathname === path;
 
   const linkClasses = (path) =>
     `px-3 py-2 rounded-md transition-colors duration-200 ${
@@ -60,6 +60,7 @@ const Navbar = () => {
               <h1 className="text-2xl font-bold text-green-900">FarmFresh</h1>
             </Link>
           </div>
+          {/* This check is now safe and works as expected */}
           {user && (
             <>
               <div className="hidden md:block">
@@ -77,11 +78,11 @@ const Navbar = () => {
               </div>
               <div className="hidden md:flex items-center space-x-2">
               <div className="bg-green-100 text-green-900 px-4 py-2 rounded-lg shadow-sm text-sm font-medium inline-flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-green-600" />
-                <span>
-                  Welcome back, <span className="font-semibold text-green-900">{user.name}</span>
-                </span>
-              </div>
+                  <UserCheck className="w-5 h-5 text-green-600" />
+                  <span>
+                    Welcome back, <span className="font-semibold text-green-900">{user.user.name}</span>
+                  </span>
+                </div>
 
                 <Link
                   to={role === "admin" ? "/admin" : "/user"}
@@ -117,30 +118,30 @@ const Navbar = () => {
       {isOpen && user && (
         <div className="md:hidden w-full">
         <div className="flex flex-col px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
-          <Link to="/" className={linkClasses('/')}>
+          <Link to="/" className={linkClasses('/')} onClick={() => setIsOpen(false)}>
             Products
           </Link>
-          <Link to="/order" className={linkClasses('/order')}>
+          <Link to="/order" className={linkClasses('/order')} onClick={() => setIsOpen(false)}>
             Place Order
           </Link>
-          <Link to="/track" className={linkClasses('/track')}>
+          <Link to="/track" className={linkClasses('/track')} onClick={() => setIsOpen(false)}>
             Track Order
           </Link>
+          <Link
+            to={role === 'admin' ? '/admin' : '/user'}
+            className={linkClasses(role === 'admin' ? '/admin' : '/user')}
+            onClick={() => setIsOpen(false)}
+          >
+            Profile
+          </Link>
           <button
-            onClick={handleLogOut}
+            onClick={() => { handleLogOut(); setIsOpen(false); }}
             className="text-left block px-3 py-2 rounded-md text-gray-700 hover:text-green-900 hover:bg-green-50"
           >
             Logout
           </button>
-          <Link
-            to={role === 'admin' ? '/admin' : '/user'}
-            className={linkClasses(role === 'admin' ? '/admin' : '/user')}
-          >
-            Admin
-          </Link>
         </div>
       </div>
-      
       )}
     </header>
   );
