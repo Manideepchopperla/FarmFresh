@@ -64,7 +64,7 @@ const Navbar = () => {
           {user && (
             <>
               <div className="hidden md:block">
-                <div className="ml-10 flex items-center space-x-4">
+                {(user.user && user.user.role==="buyer")?(<div className="ml-10 flex items-center space-x-4">
                   <Link to="/" className={linkClasses('/')}>
                     Products
                   </Link>
@@ -74,7 +74,13 @@ const Navbar = () => {
                   <Link to="/track" className={linkClasses('/track')}>
                     Track Order
                   </Link>
+                </div>):(
+                  <div className="ml-25 flex items-center">
+                    <Link to="/" className={linkClasses('/')}>
+                      Products
+                    </Link>
                 </div>
+                )}
               </div>
               <div className="hidden md:flex items-center space-x-2">
               <div className="bg-green-100 text-green-900 px-4 py-2 rounded-lg shadow-sm text-sm font-medium inline-flex items-center gap-2">
@@ -117,7 +123,7 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isOpen && user && (
         <div className="md:hidden w-full">
-        <div className="flex flex-col px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
+        {(user?.user && user?.user?.role==="buyer")?(<div className="flex flex-col px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
           <Link to="/" className={linkClasses('/')} onClick={() => setIsOpen(false)}>
             Products
           </Link>
@@ -140,7 +146,24 @@ const Navbar = () => {
           >
             Logout
           </button>
-        </div>
+        </div>):(<div className="flex flex-col px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-lg">
+          <Link to="/" className={linkClasses('/')} onClick={() => setIsOpen(false)}>
+            Products
+          </Link>
+          <Link
+            to={role === 'admin' ? '/admin' : '/user'}
+            className={linkClasses(role === 'admin' ? '/admin' : '/user')}
+            onClick={() => setIsOpen(false)}
+          >
+            Profile
+          </Link>
+          <button
+            onClick={() => { handleLogOut(); setIsOpen(false); }}
+            className="text-left block px-3 py-2 rounded-md text-gray-700 hover:text-green-900 hover:bg-green-50"
+          >
+            Logout
+          </button>
+        </div>)}
       </div>
       )}
     </header>

@@ -1,12 +1,15 @@
   import React from 'react';
   import { Link } from 'react-router-dom';
   import { ShoppingCart } from 'lucide-react';
-  import { useDispatch } from 'react-redux';
+  import { useDispatch, useSelector } from 'react-redux';
   import { addToCart } from '../utils/cartSlice'; 
   import { toast } from 'sonner';
 
   const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
+
+    const user = useSelector(state => state?.user?.user);
+    
 
     const handleAddToCart = () => {
       dispatch(addToCart({ product: product, quantity: 5 }));
@@ -30,20 +33,20 @@
           <p className="text-gray-600 text-sm mt-1">{product.description}</p>
           <div className="mt-4 flex justify-between items-center">
             {/* This button now dispatches the addToCart action */}
-            <button
+            {user && user.role==="buyer" && <button
               onClick={handleAddToCart}
               className="inline-flex items-center text-white bg-green-900 hover:bg-primary-dark px-3 py-1.5 rounded transition-colors duration-200"
             >
               <ShoppingCart className="h-4 w-4 mr-1" />
               Add to Cart
-            </button>
+            </button>}
             {/* You can keep this link if you also want a separate order page */}
-            <Link
+            {user && user.role==="buyer" && <Link
               to={`/order?product=${product._id}`}
               className="text-sm text-green-700 hover:underline"
             >
               Order Now
-            </Link>
+            </Link>}
           </div>
         </div>
       </div>

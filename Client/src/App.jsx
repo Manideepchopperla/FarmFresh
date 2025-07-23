@@ -12,8 +12,11 @@ import { Toaster } from 'sonner'
 import ProtectedRoute from './ProtectedRoute'
 import Success from './components/PaymentSuccess'
 import Cancel from './components/PaymentCancel'
+import { useSelector } from 'react-redux'
 
 function App() {
+  const user = useSelector(state => state?.user?.user);
+
   return (
     
       <BrowserRouter basename="/">
@@ -29,18 +32,18 @@ function App() {
           <Route path='/' element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="login" element={<Login />} />
 
-          <Route path="order" element={
+          {user && user.role==="buyer" && <Route path="order" element={
             <ProtectedRoute><OrderPage /></ProtectedRoute>
-          } />
-          <Route path="track" element={
+          } />}
+          {user && user.role==="buyer" && <Route path="track" element={
             <ProtectedRoute><TrackOrderPage /></ProtectedRoute>
-          } />
+          } />}
           <Route path="admin" element={
             <ProtectedRoute><AdminPage /></ProtectedRoute>
            } />
-          <Route path="user" element={
+          {user && user.role==="buyer" && <Route path="user" element={
             <ProtectedRoute><UserPage /></ProtectedRoute>
-          } />
+          } />}
           <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
           <Route path="cancel" element={<ProtectedRoute><Cancel /></ProtectedRoute>} />
 
